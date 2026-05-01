@@ -86,3 +86,8 @@ export type DailyPlan = {
   checkIns: string[];
   reflection?: string;
 };
+
+export type WeeklyReview = {
+  weekId: string;
+  rawMarkdown: string;
+};

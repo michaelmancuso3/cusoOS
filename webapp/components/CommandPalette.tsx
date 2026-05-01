@@ -48,6 +48,13 @@ function buildCommands(today: string): Command[] {
       keywords: "log history",
     },
     {
+      id: "weekly",
+      label: "Weekly reviews",
+      group: "Navigate",
+      href: "/weekly",
+      keywords: "review retro",
+    },
+    {
       id: "goals",
       label: "Goals · By venture",
       group: "Goals",

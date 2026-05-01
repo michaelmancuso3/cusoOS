@@ -280,6 +280,69 @@ function parseGoalStatus(text: string): {
   return { status: map[tag] ?? null, text: m[2] };
 }
 
+export async function writeDailyPlan(date: string, markdown: string) {
+  await writeFile(`daily/${date}.md`, markdown);
+}
+
+export type DailyPlanFields = {
+  theme: string;
+  plan: string;
+  why: string;
+  notDoing: string;
+  checkIns: string[];
+};
+
+export function serializeDailyPlan(date: string, f: DailyPlanFields): string {
+  const checkInLines = f.checkIns
+    .filter((q) => q.trim())
+    .map((q, i) => `${i + 1}. ${q.trim()}`)
+    .join("\n");
+  return `# Daily Plan — ${date}
+
+## Today's Theme
+
+${f.theme.trim() || "_(theme)_"}
+
+## The Plan
+
+${f.plan.trim() || "_(plan)_"}
+
+## Why This Plan
+
+${f.why.trim() || "_(why)_"}
+
+## What I'm NOT Doing Today
+
+${f.notDoing.trim() || "_(deferred items)_"}
+
+## End-of-Day Check-In Prompts
+
+${checkInLines || "_(check-in questions)_"}
+`;
+}
+
+export async function listWeeklyReviews(): Promise<string[]> {
+  const files = await listDirectory("weekly");
+  return files
+    .filter((f) => /^\d{4}-W\d{2}\.md$/.test(f))
+    .map((f) => f.replace(/\.md$/, ""))
+    .sort()
+    .reverse();
+}
+
+export async function readWeeklyReview(weekId: string): Promise<{ weekId: string; rawMarkdown: string } | null> {
+  try {
+    const rawMarkdown = await readTextFile(`weekly/${weekId}.md`);
+    return { weekId, rawMarkdown };
+  } catch {
+    return null;
+  }
+}
+
+export async function writeWeeklyReview(weekId: string, markdown: string) {
+  await writeTextFile(`weekly/${weekId}.md`, markdown);
+}
+
 function parseCheckIns(content: string): string[] {
   return content
     .split("\n")

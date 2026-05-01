@@ -13,6 +13,10 @@ import {
   writeVenture,
   readGoals,
   writeGoals,
+  writeDailyPlan,
+  serializeDailyPlan,
+  type DailyPlanFields,
+  writeWeeklyReview,
 } from "./cusoos";
 import {
   toggleCheckboxLine,
@@ -233,4 +237,35 @@ export async function updateTodoTextAction(
   const updated = updateTodoText(venture.rawMarkdown, oldText, newText);
   await writeVenture(slug, updated);
   revalidateVenture(slug);
+}
+
+/* ------------------------------------------------------------------ */
+/* Daily plans + Weekly reviews                                        */
+/* ------------------------------------------------------------------ */
+
+function isValidDate(date: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(date);
+}
+
+function isValidWeekId(weekId: string): boolean {
+  return /^\d{4}-W\d{2}$/.test(weekId);
+}
+
+export async function saveDailyPlanAction(
+  date: string,
+  fields: DailyPlanFields,
+) {
+  if (!isValidDate(date)) throw new Error("Invalid date");
+  const md = serializeDailyPlan(date, fields);
+  await writeDailyPlan(date, md);
+  revalidatePath(`/daily/${date}`);
+  revalidatePath("/daily");
+  revalidatePath("/");
+}
+
+export async function saveWeeklyReviewAction(weekId: string, markdown: string) {
+  if (!isValidWeekId(weekId)) throw new Error("Invalid week id");
+  await writeWeeklyReview(weekId, markdown);
+  revalidatePath(`/weekly/${weekId}`);
+  revalidatePath("/weekly");
 }

@@ -97,6 +97,13 @@ export function Sidebar({ today }: { today: string }) {
         >
           Daily plans
         </SidebarLink>
+        <SidebarLink
+          href="/weekly"
+          active={pathname.startsWith("/weekly")}
+          icon="▦"
+        >
+          Weekly reviews
+        </SidebarLink>
       </nav>
 
       <div className="p-3 border-t border-[var(--color-line)]">
