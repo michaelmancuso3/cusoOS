@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveDailyPlanAction } from "@/lib/actions";
+import { saveDailyPlanAction, generatePlanAction } from "@/lib/actions";
 
 export type DailyPlanFields = {
   theme: string;
@@ -21,9 +21,11 @@ export function DailyPlanView({
   exists: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [generating, setGenerating] = useState(false);
   const [editing, setEditing] = useState(!exists);
   const [fields, setFields] = useState<DailyPlanFields>(initial);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [genError, setGenError] = useState<string | null>(null);
 
   const set = <K extends keyof DailyPlanFields>(k: K, v: DailyPlanFields[K]) =>
     setFields((f) => ({ ...f, [k]: v }));
@@ -35,20 +37,69 @@ export function DailyPlanView({
       setEditing(false);
     });
 
+  const generate = async () => {
+    if (
+      (fields.theme.trim() || fields.plan.trim()) &&
+      !confirm(
+        "Replace the current plan content with an AI-generated one? You can still edit before saving.",
+      )
+    ) {
+      return;
+    }
+    setGenerating(true);
+    setGenError(null);
+    try {
+      const generated = await generatePlanAction(date);
+      setFields(generated);
+      setEditing(true);
+    } catch (e) {
+      setGenError(e instanceof Error ? e.message : "Generation failed");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   if (!editing) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <span className="font-mono text-[10px] tracking-wider text-[var(--color-dim)]">
             {savedAt ? `◆ SAVED @ ${savedAt}` : "READ-ONLY"}
           </span>
-          <button
-            onClick={() => setEditing(true)}
-            className="bat-btn-ghost"
-          >
-            edit plan
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={generate}
+              className="bat-btn-ghost flex items-center gap-1.5"
+              disabled={generating}
+              title="Generate a plan with AI from your current venture state"
+            >
+              {generating ? (
+                <>
+                  <span className="size-1.5 rounded-full bg-[var(--color-arc)] pulse-arc" />
+                  analyzing…
+                </>
+              ) : (
+                <>◆ generate with AI</>
+              )}
+            </button>
+            <button
+              onClick={() => setEditing(true)}
+              className="bat-btn-ghost"
+              disabled={generating}
+            >
+              edit plan
+            </button>
+          </div>
         </div>
+
+        {genError && (
+          <div className="bat-panel-crit px-3 py-2 text-sm text-white">
+            <span className="font-mono text-[10px] text-[var(--color-critical)] mr-2">
+              ERROR
+            </span>
+            {genError}
+          </div>
+        )}
 
         {fields.theme && (
           <Block title="// Theme">
@@ -77,26 +128,54 @@ export function DailyPlanView({
 
   return (
     <div className="space-y-5">
-      <div className="bat-panel-warn px-4 py-2 flex items-center justify-between">
+      <div className="bat-panel-warn px-4 py-2 flex items-center justify-between flex-wrap gap-2">
         <span className="font-mono text-[10px] tracking-[0.18em] text-[var(--color-bat)]">
           ◆ EDITING · {date}
         </span>
         <div className="flex gap-2">
+          <button
+            onClick={generate}
+            className="bat-btn-ghost flex items-center gap-1.5"
+            disabled={isPending || generating}
+            title="Replace fields with AI-generated plan"
+          >
+            {generating ? (
+              <>
+                <span className="size-1.5 rounded-full bg-[var(--color-arc)] pulse-arc" />
+                analyzing…
+              </>
+            ) : (
+              <>◆ regenerate</>
+            )}
+          </button>
           <button
             onClick={() => {
               setFields(initial);
               setEditing(false);
             }}
             className="bat-btn-ghost"
-            disabled={isPending}
+            disabled={isPending || generating}
           >
             cancel
           </button>
-          <button onClick={save} className="bat-btn" disabled={isPending}>
+          <button
+            onClick={save}
+            className="bat-btn"
+            disabled={isPending || generating}
+          >
             {isPending ? "saving…" : "save"}
           </button>
         </div>
       </div>
+
+      {genError && (
+        <div className="bat-panel-crit px-3 py-2 text-sm text-white">
+          <span className="font-mono text-[10px] text-[var(--color-critical)] mr-2">
+            ERROR
+          </span>
+          {genError}
+        </div>
+      )}
 
       <Field
         label="Theme"

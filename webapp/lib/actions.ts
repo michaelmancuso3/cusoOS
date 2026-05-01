@@ -263,6 +263,15 @@ export async function saveDailyPlanAction(
   revalidatePath("/");
 }
 
+export async function generatePlanAction(
+  date: string,
+): Promise<DailyPlanFields> {
+  if (!isValidDate(date)) throw new Error("Invalid date");
+  // Lazy-import to avoid loading the SDK on every server action
+  const { generatePlanWithAI } = await import("./ai");
+  return await generatePlanWithAI(date);
+}
+
 export async function saveWeeklyReviewAction(weekId: string, markdown: string) {
   if (!isValidWeekId(weekId)) throw new Error("Invalid week id");
   await writeWeeklyReview(weekId, markdown);

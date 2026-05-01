@@ -26,8 +26,8 @@ export function Sidebar({ today }: { today: string }) {
           <div className="flex items-center gap-3">
             <MidasLogo size={28} rings />
             <div className="leading-tight">
-              <div className="font-mono text-[11px] tracking-[0.2em] text-[var(--color-bat)]">
-                CUSOOS
+              <div className="font-mono text-[12px] tracking-[0.18em] text-[var(--color-bat)]">
+                CusoOS
               </div>
               <div className="font-mono text-[9px] tracking-[0.18em] text-[var(--color-arc)]">
                 ◆ ONLINE · V0.3

@@ -14,9 +14,9 @@ export function TopBar({ today }: { today: string }) {
         <div className="flex items-center gap-3 min-w-0">
           <Link
             href="/"
-            className="md:hidden font-mono text-[11px] tracking-[0.2em] text-[var(--color-bat)]"
+            className="md:hidden font-mono text-[12px] tracking-[0.18em] text-[var(--color-bat)]"
           >
-            CUSOOS
+            CusoOS
           </Link>
           <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--color-dim)] truncate">
             // {breadcrumb}
