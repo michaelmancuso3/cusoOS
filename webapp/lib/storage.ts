@@ -9,17 +9,19 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const BACKEND = (process.env.CUSOOS_STORAGE ?? "fs").toLowerCase() as
+const env = (name: string) => (process.env[name] ?? "").trim();
+
+const BACKEND = (env("CUSOOS_STORAGE") || "fs").toLowerCase() as
   | "fs"
   | "github";
 
 const FS_ROOT =
-  process.env.CUSOOS_ROOT ?? path.resolve(process.cwd(), "..");
+  env("CUSOOS_ROOT") || path.resolve(process.cwd(), "..");
 
-const GH_OWNER = process.env.GITHUB_REPO_OWNER ?? "";
-const GH_REPO = process.env.GITHUB_REPO_NAME ?? "";
-const GH_BRANCH = process.env.GITHUB_BRANCH ?? "main";
-const GH_TOKEN = process.env.GITHUB_TOKEN ?? "";
+const GH_OWNER = env("GITHUB_REPO_OWNER");
+const GH_REPO = env("GITHUB_REPO_NAME");
+const GH_BRANCH = env("GITHUB_BRANCH") || "main";
+const GH_TOKEN = env("GITHUB_TOKEN");
 
 export function getStorageBackend(): "fs" | "github" {
   return BACKEND;
